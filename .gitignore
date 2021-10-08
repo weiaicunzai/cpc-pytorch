@@ -27,3 +27,16 @@ var/
 ## do not push heavy files which are created during training to github
 logs/
 datasets/
+
+GreedyInfoMax/utils/crop_prostates.py
+GreedyInfoMax/utils/lmdb_writer.py
+aa.jpg
+excrc_cpc
+heihei
+lmdb_writer.py
+logs_prostate/
+mmm.py
+opt.pkl
+prostate
+crc2lmdb
+crop_crc

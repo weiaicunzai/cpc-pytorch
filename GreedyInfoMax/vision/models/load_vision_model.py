@@ -6,6 +6,13 @@ from GreedyInfoMax.utils import model_utils
 
 def load_model_and_optimizer(opt, num_GPU=None, reload_model=False, calc_loss=True):
 
+    #import pickle
+    #f = open('opt.pkl', 'wb')
+    #pickle.dump(opt, f)
+    #import sys; sys.exit()
+    #print(calc_loss)
+    #import sys; sys.exit()
+
     model = FullModel.FullVisionModel(
         opt, calc_loss
     )
@@ -13,13 +20,14 @@ def load_model_and_optimizer(opt, num_GPU=None, reload_model=False, calc_loss=Tr
     if opt.train_module != opt.model_splits and opt.model_splits > 1:
         optimizer = torch.optim.Adam(model.encoder[opt.train_module].parameters(), lr=opt.learning_rate)
     else:
+        print('here')
         optimizer = torch.optim.Adam(model.parameters(), lr=opt.learning_rate)
 
     model, num_GPU = model_utils.distribute_over_GPUs(opt, model, num_GPU=num_GPU)
 
-    model, optimizer = model_utils.reload_weights(
-        opt, model, optimizer, reload_model=reload_model
-    )
+    #model, optimizer = model_utils.reload_weights(
+    #    opt, model, optimizer, reload_model=reload_model
+    #)
 
     return model, optimizer
 

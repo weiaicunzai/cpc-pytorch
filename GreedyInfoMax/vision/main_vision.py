@@ -1,6 +1,7 @@
 import torch
 import time
 import numpy as np
+import sys
 
 #### own modules
 from GreedyInfoMax.utils import logger
@@ -14,16 +15,20 @@ def validate(opt, model, test_loader):
 
     loss_epoch = [0 for i in range(opt.model_splits)]
     starttime = time.time()
+    print(test_loader, test_loader.dataset)
 
-    for step, (img, label) in enumerate(test_loader):
+    print('evaluating......')
+    with torch.no_grad():
+        for step, (img, label) in enumerate(test_loader):
 
-        model_input = img.to(opt.device)
-        label = label.to(opt.device)
+            model_input = img.to(opt.device)
+            label = label.to(opt.device)
 
-        loss, _, _, _ = model(model_input, label, n=opt.train_module)
-        loss = torch.mean(loss, 0)
+            loss, _, _, _ = model(model_input, label, n=opt.train_module)
+            loss = torch.mean(loss, 0)
 
-        loss_epoch += loss.data.cpu().numpy()
+            loss_epoch += loss.data.cpu().numpy()
+            print('[{}/{}]'.format(step, len(test_loader)), loss)
 
     for i in range(opt.model_splits):
         print(
@@ -44,6 +49,7 @@ def train(opt, model):
 
     starttime = time.time()
     cur_train_module = opt.train_module
+    #print(opt.train_module)
 
     for epoch in range(opt.start_epoch, opt.num_epochs + opt.start_epoch):
 
@@ -51,9 +57,8 @@ def train(opt, model):
         loss_updates = [1 for _ in range(opt.model_splits)]
 
         for step, (img, label) in enumerate(train_loader):
-
-            if step % print_idx == 0:
-                print(
+            #if step % print_idx == 0:
+            print(
                     "Epoch [{}/{}], Step [{}/{}], Training Block: {}, Time (s): {:.1f}".format(
                         epoch + 1,
                         opt.num_epochs + opt.start_epoch,
@@ -68,9 +73,12 @@ def train(opt, model):
 
             model_input = img.to(opt.device)
             label = label.to(opt.device)
+            #print(model_input.shape)
+            #print(label.shape)
 
             loss, _, _, accuracy = model(model_input, label, n=cur_train_module)
             loss = torch.mean(loss, 0)  # Take mean over outputs of different GPUs.
+            print('loss', loss.item())
             accuracy = torch.mean(accuracy, 0)
 
             if cur_train_module != opt.model_splits and opt.model_splits > 1:
@@ -92,8 +100,10 @@ def train(opt, model):
                     if opt.loss == 1:
                         print("\t \t Accuracy: \t \t {:.4f}".format(print_acc))
 
+
         if opt.validate:
             validation_loss = validate(opt, model, test_loader)  # Test_loader corresponds to validation set here.
+            print(validation_loss)
             logs.append_val_loss(validation_loss)
 
         logs.append_train_loss([x / loss_updates[idx] for idx, x in enumerate(loss_epoch)])
@@ -119,12 +129,18 @@ if __name__ == "__main__":
 
     logs = logger.Logger(opt)
 
-    train_loader, _, supervised_loader, _, test_loader, _ = get_dataloader.get_dataloader(
+    #train_loader, _, supervised_loader, _, test_loader, _ = get_dataloader.get_dataloader(
+    #    opt
+    #)
+    train_loader, _, _, _, test_loader, _ = get_dataloader.get_dataloader(
         opt
     )
+    print(opt)
+    #print(train_loader, supervised_loader, test_loader)
 
-    if opt.loss == 1:
-        train_loader = supervised_loader
+
+    #if opt.loss == 1:
+    #    train_loader = supervised_loader
 
     try:
         # Train the model

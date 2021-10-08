@@ -75,7 +75,8 @@ class ResNet_Encoder(nn.Module):
         num_blocks,
         filter,
         encoder_num,
-        patch_size=16,
+        #patch_size=16,
+        patch_size=64,
         input_dims=3,
         calc_loss=False,
     ):
@@ -152,6 +153,11 @@ class ResNet_Encoder(nn.Module):
 
     def forward(self, x, n_patches_x, n_patches_y, label, patchify_right_now=True):
         if self.patchify and self.encoder_num == 0 and patchify_right_now:
+            #print('here', self.patch_size, self.patch_size // self.overlap)
+            #x = [:, :, :64, :64]
+            #print(x.shape)
+            #self.patch_size = 16
+            #self.overlap = 2
             x = (
                 x.unfold(2, self.patch_size, self.patch_size // self.overlap)
                 .unfold(3, self.patch_size, self.patch_size // self.overlap)
@@ -163,6 +169,7 @@ class ResNet_Encoder(nn.Module):
                 x.shape[0] * x.shape[1] * x.shape[2], x.shape[3], x.shape[4], x.shape[5]
             )
 
+        #print(x.shape)
         z = self.model(x)
 
         out = F.adaptive_avg_pool2d(z, 1)
@@ -178,4 +185,3 @@ class ResNet_Encoder(nn.Module):
             loss = None
 
         return out, z, loss, accuracy, n_patches_x, n_patches_y
-

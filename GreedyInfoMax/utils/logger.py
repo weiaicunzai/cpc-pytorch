@@ -74,7 +74,7 @@ class Logger:
             )
 
         ### remove old model files to keep dir uncluttered
-        if (epoch - self.num_models_to_keep) % 10 != 0:
+        if (epoch - self.num_models_to_keep) % 1 != 0:
             try:
                 if self.opt.experiment == "vision":
                     for idx, _ in enumerate(model.module.encoder):
